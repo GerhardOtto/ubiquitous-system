@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Item } from "@/types/item";
-import { loadItems } from "@/lib/storage";
+import { loadItems, saveItems } from "@/lib/storage";
 import ItemsToolbar, { StatusFilter } from "@/app/components/items-toolbar";
 import ItemsDataTable, { SortDir, SortKey } from "@/app/components/items-data-table";
 import { seedItems } from "@/data/items";
@@ -77,6 +77,14 @@ export default function Home() {
     setCurrentPage(1);
   }
 
+  function handleBulkStatusUpdate(ids: string[], status: Item["status"]) {
+    const updated = items.map((item) =>
+      ids.includes(item.id) ? { ...item, status, updatedAt: new Date().toISOString() } : item
+    );
+    setItems(updated);
+    saveItems(updated);
+  }
+
   return (
     <main className="mx-auto max-w-8xl px-4 py-4">
       <div className="space-y-4">
@@ -107,6 +115,7 @@ export default function Home() {
               sortKey={sortKey}
               sortDir={sortDir}
               onSort={handleSort}
+              onBulkStatusUpdate={handleBulkStatusUpdate}
             />
           )}
         </div>
