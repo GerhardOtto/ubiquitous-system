@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 import { Item } from "@/types/item";
 import { loadItems, updateItem, deleteItem } from "@/lib/storage";
 import { seedItems } from "@/data/items";
@@ -43,10 +44,12 @@ export default function ItemDetailPage() {
       onSave={(saved) => {
         updateItem(saved, seedItems);
         setItem(saved);
+        toast.success(`"${saved.name}" updated`);
       }}
       onCancel={() => router.back()}
       onDelete={(deleted) => {
         deleteItem(deleted.id, seedItems);
+        toast.success(`"${deleted.name}" deleted`);
         router.back();
       }}
     />

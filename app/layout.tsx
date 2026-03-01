@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/ui/header";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -31,6 +32,7 @@ export default function RootLayout({
         <div className="min-h-screen bg-background">
           <Header />
           {children}
+          <Toaster />
         </div>
       </body>
     </html>
