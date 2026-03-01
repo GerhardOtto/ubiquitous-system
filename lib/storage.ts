@@ -31,3 +31,8 @@ export function createItem(newItem: Item, seedData: Item[]): void {
   const items = loadItems(seedData);
   saveItems([...items, newItem]);
 }
+
+export function deleteItem(id: string, seedData: Item[]): void {
+  const items = loadItems(seedData);
+  saveItems(items.filter((item) => item.id !== id));
+}

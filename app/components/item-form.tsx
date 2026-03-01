@@ -5,12 +5,7 @@ import { Item } from "@/types/item";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -18,12 +13,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Pencil, Save, X } from "lucide-react";
+import { ArrowLeft, Pencil, Save, Trash2, X } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type ItemFormProps = {
   item?: Item;
   onSave: (item: Item) => void;
   onCancel: () => void;
+  onDelete?: (item: Item) => void;
 };
 
 function emptyDraft(): Item {
@@ -37,10 +43,10 @@ function emptyDraft(): Item {
   };
 }
 
-export function ItemForm({ item, onSave, onCancel }: ItemFormProps) {
+export function ItemForm({ item, onSave, onCancel, onDelete }: ItemFormProps) {
   const isCreateMode = item === undefined;
   const [draft, setDraft] = useState<Item>(() =>
-    item ? { ...item } : emptyDraft()
+    item ? { ...item } : emptyDraft(),
   );
   const [isEditing, setIsEditing] = useState(isCreateMode);
 
@@ -92,9 +98,42 @@ export function ItemForm({ item, onSave, onCancel }: ItemFormProps) {
                 </Button>
               </>
             ) : (
-              <Button size="sm" onClick={handleEdit}>
-                <Pencil /> Edit
-              </Button>
+              <>
+                {onDelete && item && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        <Trash2 /> Delete
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          Delete &quot;{item.name}&quot;?
+                        </DialogTitle>
+                        <DialogDescription>
+                          This action cannot be undone. The item will be
+                          permanently removed.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button
+                          variant="destructive"
+                          onClick={() => onDelete(item)}
+                        >
+                          Delete
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                <Button size="sm" onClick={handleEdit}>
+                  <Pencil /> Edit
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -145,7 +184,9 @@ export function ItemForm({ item, onSave, onCancel }: ItemFormProps) {
                 <Label htmlFor="field-owner">Owner</Label>
                 <Input
                   id="field-owner"
-                  value={isEditing ? (draft.owner ?? "") : (displayItem.owner ?? "")}
+                  value={
+                    isEditing ? (draft.owner ?? "") : (displayItem.owner ?? "")
+                  }
                   readOnly={!isEditing}
                   placeholder="—"
                   onChange={(e) => handleChange("owner", e.target.value)}
@@ -171,7 +212,11 @@ export function ItemForm({ item, onSave, onCancel }: ItemFormProps) {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Input id="field-status" value={displayItem.status} readOnly />
+                  <Input
+                    id="field-status"
+                    value={displayItem.status}
+                    readOnly
+                  />
                 )}
               </div>
 
@@ -182,13 +227,16 @@ export function ItemForm({ item, onSave, onCancel }: ItemFormProps) {
                   value={
                     isEditing
                       ? draft.updatedAt
-                      : new Date(displayItem.updatedAt).toLocaleString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                      : new Date(displayItem.updatedAt).toLocaleString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )
                   }
                   readOnly
                   className="font-mono text-xs text-muted-foreground"

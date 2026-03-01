@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { Item } from "@/types/item";
-import { loadItems, updateItem } from "@/lib/storage";
+import { loadItems, updateItem, deleteItem } from "@/lib/storage";
 import { seedItems } from "@/data/items";
 import { ItemForm } from "@/app/components/item-form";
 
@@ -45,6 +45,10 @@ export default function ItemDetailPage() {
         setItem(saved);
       }}
       onCancel={() => router.back()}
+      onDelete={(deleted) => {
+        deleteItem(deleted.id, seedItems);
+        router.back();
+      }}
     />
   );
 }
