@@ -26,3 +26,8 @@ export function updateItem(updated: Item, seedData: Item[]): void {
     saveItems(items);
   }
 }
+
+export function createItem(newItem: Item, seedData: Item[]): void {
+  const items = loadItems(seedData);
+  saveItems([...items, newItem]);
+}

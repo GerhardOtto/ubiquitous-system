@@ -1,11 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Item } from "@/types/item";
 import { loadItems } from "@/lib/storage";
 import ItemsToolbar, { StatusFilter } from "@/app/components/items-toolbar";
 import ItemsDataTable, { SortDir, SortKey } from "@/app/components/items-data-table";
 import { seedItems } from "@/data/items";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const PAGE_SIZE = 10;
 
@@ -17,19 +20,11 @@ export default function Home() {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  if (error) throw error;
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      try {
-        setItems(loadItems(seedItems));
-      } catch (e) {
-        setError(e instanceof Error ? e : new Error(String(e)));
-      } finally {
-        setLoading(false);
-      }
+      setItems(loadItems(seedItems));
+      setLoading(false);
     }, 500);
     return () => clearTimeout(timer);
   }, []);
@@ -85,14 +80,19 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-8xl px-4 py-4">
       <div className="space-y-4">
-        <ItemsToolbar
-          filter={filter}
-          search={search}
-          onFilterChange={handleFilterChange}
-          onSearchChange={handleSearchChange}
-          totalCount={items.length}
-          filteredCount={filteredItems.length}
-        />
+        <div className="flex items-start justify-between gap-4">
+          <ItemsToolbar
+            filter={filter}
+            search={search}
+            onFilterChange={handleFilterChange}
+            onSearchChange={handleSearchChange}
+            totalCount={items.length}
+            filteredCount={filteredItems.length}
+          />
+          <Button asChild size="sm" className="shrink-0">
+            <Link href="/items/new"><Plus /> Add Item</Link>
+          </Button>
+        </div>
         <div className="rounded-lg border border-border bg-card overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">

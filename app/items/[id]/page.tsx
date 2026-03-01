@@ -6,31 +6,13 @@ import { useParams } from "next/navigation";
 import { Item } from "@/types/item";
 import { loadItems, updateItem } from "@/lib/storage";
 import { seedItems } from "@/data/items";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ArrowLeft, Pencil, Save, X } from "lucide-react";
+import { ItemForm } from "@/app/components/item-form";
 
 export default function ItemDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
   const [item, setItem] = useState<Item | null>(null);
-  const [draft, setDraft] = useState<Item | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,35 +20,10 @@ export default function ItemDetailPage() {
       const items = loadItems(seedItems);
       const found = items.find((i) => i.id === id) ?? null;
       setItem(found);
-      setDraft(found ? { ...found } : null);
       setLoading(false);
     }, 0);
     return () => clearTimeout(timer);
   }, [id]);
-
-  function handleEdit() {
-    setDraft(item ? { ...item } : null);
-    setIsEditing(true);
-  }
-
-  function handleCancel() {
-    setDraft(item ? { ...item } : null);
-    setIsEditing(false);
-  }
-
-  function handleSave() {
-    if (!draft) return;
-    const saved = { ...draft, updatedAt: new Date().toISOString() };
-    updateItem(saved, seedItems);
-    setItem(saved);
-    setDraft(saved);
-    setIsEditing(false);
-  }
-
-  function handleChange(field: keyof Omit<Item, "id">, value: string) {
-    if (!draft) return;
-    setDraft({ ...draft, [field]: value });
-  }
 
   if (loading) {
     return (
@@ -78,126 +35,16 @@ export default function ItemDetailPage() {
     );
   }
 
-  if (!item || !draft) notFound();
+  if (!item) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft /> Back
-          </Button>
-          <div className="flex gap-2">
-            {isEditing ? (
-              <>
-                <Button variant="outline" size="sm" onClick={handleCancel}>
-                  <X /> Cancel
-                </Button>
-                <Button size="sm" onClick={handleSave}>
-                  <Save /> Save
-                </Button>
-              </>
-            ) : (
-              <Button size="sm" onClick={handleEdit}>
-                <Pencil /> Edit
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{isEditing ? draft.name || "Edit Item" : item.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="field-id">UUID</Label>
-                <Input
-                  id="field-id"
-                  value={item.id}
-                  readOnly
-                  className="font-mono text-xs text-muted-foreground"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="field-name">Name</Label>
-                <Input
-                  id="field-name"
-                  value={isEditing ? draft.name : item.name}
-                  readOnly={!isEditing}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="field-category">Category</Label>
-                <Input
-                  id="field-category"
-                  value={isEditing ? draft.category : item.category}
-                  readOnly={!isEditing}
-                  onChange={(e) => handleChange("category", e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="field-owner">Owner</Label>
-                <Input
-                  id="field-owner"
-                  value={isEditing ? (draft.owner ?? "") : (item.owner ?? "")}
-                  readOnly={!isEditing}
-                  placeholder="—"
-                  onChange={(e) => handleChange("owner", e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="field-status">Status</Label>
-                {isEditing ? (
-                  <Select
-                    value={draft.status}
-                    onValueChange={(v) =>
-                      handleChange("status", v as Item["status"])
-                    }
-                  >
-                    <SelectTrigger id="field-status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input id="field-status" value={item.status} readOnly />
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="field-updated">Updated At</Label>
-                <Input
-                  id="field-updated"
-                  value={
-                    isEditing
-                      ? draft.updatedAt
-                      : new Date(item.updatedAt).toLocaleString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                  }
-                  readOnly
-                  className="font-mono text-xs text-muted-foreground"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+    <ItemForm
+      item={item}
+      onSave={(saved) => {
+        updateItem(saved, seedItems);
+        setItem(saved);
+      }}
+      onCancel={() => router.back()}
+    />
   );
 }
